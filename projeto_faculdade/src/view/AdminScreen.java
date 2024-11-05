@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import controller.AdminController;
+import model.DonorModel;
 import model.ManagerModel;
 
 public class AdminScreen extends JFrame {
@@ -145,10 +148,9 @@ public class AdminScreen extends JFrame {
 		jPanel.add(findExpenseButton);
 		jPanel.add(deleteExpense);
 		jPanel.add(returnButton);
-		String[] columnNames = { "Doador", "Descrição", "Valor", "Monitor" };
-		Object[][] data = {}; // Replace with actual data
-		JTable jTable = new JTable(data, columnNames);
-
+		String[] columnNames = { "ID", "Monitor", "Descrição", "Valor", "Data da despesa" };
+		JTable jTable = new JTable(// parei aqui data, columnNames);
+/!
 		jDialog.add(new JScrollPane(jTable), BorderLayout.CENTER);
 		jDialog.add(jPanel, BorderLayout.SOUTH);
 		jDialog.setLocationRelativeTo(screen);
@@ -239,38 +241,88 @@ public class AdminScreen extends JFrame {
 	// Manager settings
 	private void managerSettingsScreen(JFrame screen) {
 		JPanel jPanel = new JPanel();
-		JDialog jDialog = new JDialog(screen, "Monitores", false);
+		JDialog managerScreen = new JDialog(screen, "Monitores", false);
 		List<ManagerModel> managerModelList = new ArrayList<>();
 
-		jDialog.setSize(900, 400);
-		jDialog.setResizable(true);
-		jDialog.setLayout(new BorderLayout());
+		managerScreen.setSize(900, 400);
+		managerScreen.setResizable(true);
+		managerScreen.setLayout(new BorderLayout());
+		managerScreen.setLocationRelativeTo(screen);
 		jPanel.setLayout(new FlowLayout());
 
 		JButton allManagerButton = new JButton("Todos os monitores");
 		JButton createManagerButton = new JButton("Novo Monitor");
-		JButton deleteManagerButton = new JButton("Deletar");
 		JButton returnButton = new JButton("Voltar");
 
-		deleteManagerButton.setBackground(Color.pink);
+
 		jPanel.add(allManagerButton);
 		jPanel.add(createManagerButton);
-		jPanel.add(deleteManagerButton);
+
 		jPanel.add(returnButton);
 
 		String[] columnNames = { "ID", "login", "Nome", "Telefone", "Data de criação" };
 		JTable jTable = new JTable(new DefaultTableModel(columnNames, 0));
 
-		jDialog.add(new JScrollPane(jTable), BorderLayout.CENTER);
-		jDialog.add(jPanel, BorderLayout.SOUTH);
-		jDialog.setLocationRelativeTo(screen);
-		jDialog.setVisible(true);
+		jTable.addMouseListener(new MouseAdapter() {
 
-		returnButton.addActionListener(e -> jDialog.dispose());
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = jTable.getSelectedRow();
+				if (row != 1) {
+					ManagerModel managerModel = new ManagerModel();
+					
+					managerModel.setManagerId((Long) jTable.getValueAt(row, 0));
+					managerModel.setLogin((String) jTable.getValueAt(row, 1));
+					managerModel.setName((String) jTable.getValueAt(row, 2));
+					managerModel.setDateManager((String) jTable.getValueAt(row, 3));
+					
+					JDialog jDialog = new JDialog(screen ,"",false);
+					jDialog.setLocationRelativeTo(screen);
+					jDialog.setLayout(null);
+					jDialog.setSize(new Dimension(360, 300));
+					JLabel idLabel = new JLabel("ID: " + managerModel.getManagerId());
+					JLabel loginLabel = new JLabel("Login: " + managerModel.getLogin());
+					JLabel nameLabel = new JLabel("Nome: " + managerModel.getName());
+					JButton updateManager = new JButton("Atualizar");
+					JButton deleteManager = new JButton("Deletar");
+					JButton turnBack = new JButton("Voltar");
+					deleteManager.setBackground(Color.pink);
+					
+					idLabel.setBounds(10,10, 200,30);
+					loginLabel.setBounds(10,50, 200,30);
+					nameLabel.setBounds(10,90, 200,30);
+					updateManager.setBounds(20,200, 100,30);
+					deleteManager.setBounds(130,200, 100,30);
+					turnBack.setBounds(240,200, 100,30);
+					jDialog.add(updateManager);
+					jDialog.add(deleteManager);
+					jDialog.add(turnBack);
+					jDialog.add(idLabel);
+					jDialog.add(loginLabel);
+					jDialog.add(nameLabel);
+					jDialog.setVisible(true);
+				/*	
+				
+					*/
+		
+				
+					updateManager.addActionListener(c -> {
+						formManagerUpdate(screen, managerModel);
+						jDialog.dispose();
+						});
+					
+					turnBack.addActionListener(b -> jDialog.dispose());
+				}
+			}
+		});
+
+		managerScreen.add(new JScrollPane(jTable), BorderLayout.CENTER);
+		managerScreen.add(jPanel, BorderLayout.SOUTH);
+		managerScreen.setVisible(true);
+
+		returnButton.addActionListener(e -> managerScreen.dispose());
 
 		createManagerButton.addActionListener(e -> formManager(screen));
-
-		deleteManagerButton.addActionListener(e -> deleteManager(screen));
 
 		allManagerButton.addActionListener(new ActionListener() {
 			@Override
@@ -300,6 +352,101 @@ public class AdminScreen extends JFrame {
 
 	}
 
+	
+	
+	public void formManagerUpdate(JFrame screen, ManagerModel managerModel) {
+		JDialog jDialog = new JDialog(screen, "Atualizar Monitor", true);
+		jDialog.setSize(400, 400);
+		jDialog.setLayout(null);
+		jDialog.setResizable(false);
+		jDialog.setLocationRelativeTo(screen);
+		JTextField nameField = new JTextField();
+		JLabel loginField = new JLabel();
+		JPasswordField passwordField = new JPasswordField();
+		JTextField phoneField = new JTextField();
+		JLabel nameLabel = new JLabel("Nome:");
+		JLabel loginLabel = new JLabel("Login:");
+		JLabel passwordLabel = new JLabel("Senha:");
+		JLabel phoneLabel = new JLabel("Telefone:");
+		JLabel idLabel = new JLabel("ID: " + managerModel.getManagerId());
+		JButton submitButton = new JButton("Atualizar");
+		JButton cancelButton = new JButton("Cancelar");
+		JButton clearFieldsButton = new JButton("Limpar");
+		loginField.setText(managerModel.getLogin());
+		
+		idLabel.setBounds(50, 10, 100, 30);
+		loginLabel.setBounds(50, 50, 100, 30);
+		loginField.setBounds(150, 50, 200, 30);
+		nameLabel.setBounds(50, 100, 100, 30);
+		nameField.setBounds(150, 100, 200, 30);
+		passwordLabel.setBounds(50, 150, 100, 30);
+		passwordField.setBounds(150, 150, 200, 30);
+		phoneLabel.setBounds(50, 200, 100, 30);
+		phoneField.setBounds(150, 200, 200, 30);
+		clearFieldsButton.setBounds(40, 300, 100, 30);
+		submitButton.setBounds(150, 300, 100, 30);
+		cancelButton.setBounds(260, 300, 100, 30);
+
+		jDialog.add(idLabel);
+		jDialog.add(clearFieldsButton);
+		jDialog.add(nameLabel);
+		jDialog.add(nameField);
+		jDialog.add(loginLabel);
+		jDialog.add(loginField);
+		jDialog.add(passwordLabel);
+		jDialog.add(passwordField);
+		jDialog.add(phoneLabel);
+		jDialog.add(phoneField);
+		jDialog.add(submitButton);
+		jDialog.add(cancelButton);
+
+		clearFieldsButton.addActionListener(b -> {
+			nameField.setText("");
+			loginField.setText("");
+			passwordField.setText("");
+			phoneField.setText("");
+
+		});
+
+		
+			submitButton.addActionListener(e -> {
+				String passText = new String( passwordField.getPassword());
+				
+				managerModel.setName((String)nameField.getText());
+				managerModel.setPassword(passText);
+				managerModel.setPhone(phoneField.getText());
+				
+				
+				
+				AdminController admin = new AdminController();
+		
+				
+
+				if (!admin.findManagerByNameAndPhone(managerModel)) {
+					admin.updateManager(managerModel);
+					JOptionPane.showMessageDialog(jDialog, "Monitor atualizado com sucesso!", "information",
+							JOptionPane.ERROR_MESSAGE);
+					jDialog.dispose();
+				
+				} else {
+					JOptionPane.showMessageDialog(jDialog, "Nome e/ou telefone Já em uso!", "Erro",
+							JOptionPane.ERROR_MESSAGE);
+				}
+
+			}
+			);
+
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				jDialog.dispose();
+			}
+		});
+		
+		jDialog.setVisible(true);
+	}
+	
+	
 	// Manager form
 	private void formManager(JFrame screen) {
 
@@ -307,7 +454,7 @@ public class AdminScreen extends JFrame {
 		jDialog.setSize(400, 400);
 		jDialog.setLayout(null);
 		jDialog.setResizable(false);
-
+		jDialog.setLocationRelativeTo(screen);
 		JTextField nameField = new JTextField();
 		JTextField loginField = new JTextField();
 		JPasswordField passwordField = new JPasswordField();
@@ -319,7 +466,7 @@ public class AdminScreen extends JFrame {
 		JButton submitButton = new JButton("Criar");
 		JButton cancelButton = new JButton("Cancelar");
 		JButton clearFieldsButton = new JButton("Limpar");
-		
+
 		nameLabel.setBounds(50, 50, 100, 30);
 		nameField.setBounds(150, 50, 200, 30);
 		loginLabel.setBounds(50, 100, 100, 30);
@@ -331,8 +478,7 @@ public class AdminScreen extends JFrame {
 		clearFieldsButton.setBounds(40, 300, 100, 30);
 		submitButton.setBounds(150, 300, 100, 30);
 		cancelButton.setBounds(260, 300, 100, 30);
-		
-		
+
 		jDialog.add(clearFieldsButton);
 		jDialog.add(nameLabel);
 		jDialog.add(nameField);
@@ -350,19 +496,19 @@ public class AdminScreen extends JFrame {
 			loginField.setText("");
 			passwordField.setText("");
 			phoneField.setText("");
-			
-			
+
 		});
-		
+
 		submitButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				ManagerModel manageModel = new ManagerModel();
 				String name = nameField.getText();
 				String login = loginField.getText();
 				String password = new String(passwordField.getPassword());
 				String phone = phoneField.getText();
 
-				ManagerModel manageModel = new ManagerModel();
+			
 
 				manageModel.setName(name);
 				manageModel.setLogin(login);
@@ -422,8 +568,6 @@ public class AdminScreen extends JFrame {
 
 	}
 
-	
-	
 	public static void main(String[] args) {
 		AdminScreen screen = new AdminScreen();
 		screen.AdminScreenPrincipal();

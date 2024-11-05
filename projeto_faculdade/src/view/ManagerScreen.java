@@ -27,7 +27,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-
 import controller.ManagerController;
 import feature.JNumberFormatField;
 import model.DonationModel;
@@ -82,8 +81,8 @@ public class ManagerScreen {
 
 		donorSettingsButton.addActionListener(e -> donorSettingsScreen(screen));
 
-		donationRecordButton.addActionListener(e -> donationFind(screen));
-		
+		donationRecordButton.addActionListener(e -> donationScreenMain(screen));
+
 		expenseRecordButton.addActionListener(e -> managerExpenseScreen(screen));
 
 	}
@@ -254,7 +253,7 @@ public class ManagerScreen {
 		JButton findDonorButton = new JButton("Buscar doador");
 		JButton returnButton = new JButton("Voltar");
 
-		jDialog.setSize(600, 400);
+		jDialog.setSize(900, 400);
 		jDialog.setResizable(true);
 		jPanel.setLayout(new FlowLayout());
 
@@ -263,6 +262,21 @@ public class ManagerScreen {
 		jPanel.add(returnButton);
 		String[] columnNames = { "Doador", "Telefone", "Data da criação" };
 		JTable jTable = new JTable(new DefaultTableModel(columnNames, 0));
+
+		jTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = jTable.getSelectedRow();
+				if (row != -1) {
+					DonorModel donor = new DonorModel();
+					donor.setName((String) jTable.getValueAt(row, 0));
+					donor.setPhone((String) jTable.getValueAt(row, 1));
+					donor.setDateDonor((String) jTable.getValueAt(row, 2));
+
+					screenTableDonor(screen, donor);
+				}
+			}
+		});
 
 		jDialog.add(new JScrollPane(jTable), BorderLayout.CENTER);
 		jDialog.add(jPanel, BorderLayout.SOUTH);
@@ -365,7 +379,7 @@ public class ManagerScreen {
 		JButton cancelButton = new JButton("Cancelar");
 		JButton clearFieldsButton = new JButton("Limpar");
 		JNumberFormatField expenseValue = new JNumberFormatField(new DecimalFormat(" #,##0.00"));
-		expenseValue.setLimit(7);
+		expenseValue.setLimit(8);
 		expenseDescription.setFont(new Font("Serif", Font.ITALIC, 12));
 		expenseDescription.setLineWrap(true);
 		expenseDescription.setWrapStyleWord(true);
@@ -511,10 +525,10 @@ public class ManagerScreen {
 		returnButton.addActionListener(e -> jDialog.dispose());
 
 		anonymousDonationButton.addActionListener(e -> donationFormAnonymous(screen));
-	
+
 	}
 
-	private void donationForm(JFrame screen, String donorName,String donorPhone) {
+	private void donationForm(JFrame screen, String donorName, String donorPhone) {
 		JDialog donationDialog = new JDialog(screen, "Doação", false);
 		donationDialog.setSize(500, 450);
 		donationDialog.setLocationRelativeTo(screen);
@@ -522,7 +536,7 @@ public class ManagerScreen {
 		JTextField donorNameField = new JTextField(20);
 		JTextArea donorDescriptionField = new JTextArea();
 		JNumberFormatField donorValueField = new JNumberFormatField(new DecimalFormat("#,##0.00"));
-		donorValueField.setLimit(7);
+		donorValueField.setLimit(8);
 		JTextField donorPhoneField = new JTextField(15);
 		JLabel donorNameLabel = new JLabel("Nome:");
 		JLabel donorPhoneLabel = new JLabel("Telefone:");
@@ -532,7 +546,6 @@ public class ManagerScreen {
 		JButton donorReturnButton = new JButton("Cancelar");
 		JButton clearFieldsButton = new JButton("Limpar");
 
-		
 		donorNameField.setText(donorName);
 		donorPhoneField.setText(donorPhone);
 		donorDescriptionField.setFont(new Font("Serif", Font.ITALIC, 12));
@@ -557,9 +570,7 @@ public class ManagerScreen {
 		clearFieldsButton.setBounds(170, 330, 100, 30);
 		submitButton.setBounds(280, 330, 100, 30);
 		donorReturnButton.setBounds(390, 330, 100, 30);
-		
-		
-		
+
 		donationDialog.add(scrooll);
 		donationDialog.add(donorNameLabel);
 		donationDialog.add(donorNameField);
@@ -580,17 +591,17 @@ public class ManagerScreen {
 
 		submitButton.addActionListener(b -> {
 			String description = donorDescriptionField.getText();
-			String value = donorValueField.getText();
+			String value = donorValueField.getText().replace(",", "");
 			BigDecimal valueDecimal = new BigDecimal(value);
 			System.out.println(value);
 			ManagerController managerController = new ManagerController();
-			if(managerController.findDonorByNameAndPhone(donorName, donorPhone) == true) {
+			if (managerController.findDonorByNameAndPhone(donorName, donorPhone) == true) {
 				managerController.createDonation(description, valueDecimal);
 				JOptionPane.showMessageDialog(screen, "Doação realizada com sucesso!", "Resultado",
 						JOptionPane.INFORMATION_MESSAGE);
 				donationDialog.dispose();
-			};
-	
+			}
+			;
 
 		});
 
@@ -600,7 +611,7 @@ public class ManagerScreen {
 	}
 
 	private void findByTableExpense(JFrame screen, String description, BigDecimal value, String date) {
-		JDialog donationDialog = new JDialog(screen, "Doação", false);
+		JDialog donationDialog = new JDialog(screen, "Despesas", false);
 		donationDialog.setSize(600, 400);
 		donationDialog.setLocationRelativeTo(screen);
 		donationDialog.setLayout(null);
@@ -645,7 +656,6 @@ public class ManagerScreen {
 		donationDialog.setVisible(true);
 	}
 
-	
 	private void donationFormAnonymous(JFrame screen) {
 		JDialog donationDialog = new JDialog(screen, "Doação", false);
 		donationDialog.setSize(500, 450);
@@ -654,14 +664,13 @@ public class ManagerScreen {
 		JLabel donorNameField = new JLabel("Doação anônima");
 		JTextArea donorDescriptionField = new JTextArea();
 		JNumberFormatField donorValueField = new JNumberFormatField(new DecimalFormat("#,##0.00"));
-		donorValueField.setLimit(7);
+		donorValueField.setLimit(8);
 		JLabel donorDescriptionLabel = new JLabel("Descrição:");
 		JLabel donorValueLabel = new JLabel("Valor:");
 		JButton submitButton = new JButton("Gerar");
 		JButton donorReturnButton = new JButton("Cancelar");
 		JButton clearFieldsButton = new JButton("Limpar");
 
-		
 		donorDescriptionField.setFont(new Font("Serif", Font.ITALIC, 12));
 		donorDescriptionField.setLineWrap(true);
 		donorDescriptionField.setWrapStyleWord(true);
@@ -701,12 +710,11 @@ public class ManagerScreen {
 			BigDecimal valueDecimal = new BigDecimal(value);
 			System.out.println(value);
 			ManagerController managerController = new ManagerController();
-			
-				managerController.createAnonymousDonation(description, valueDecimal);
-				JOptionPane.showMessageDialog(screen, "Doação realizada com sucesso!", "Resultado",
-						JOptionPane.INFORMATION_MESSAGE);
-				donationDialog.dispose();
 
+			managerController.createAnonymousDonation(description, valueDecimal);
+			JOptionPane.showMessageDialog(screen, "Doação realizada com sucesso!", "Resultado",
+					JOptionPane.INFORMATION_MESSAGE);
+			donationDialog.dispose();
 
 		});
 
@@ -714,24 +722,24 @@ public class ManagerScreen {
 
 		donationDialog.setVisible(true);
 	}
-	
-	public void donationFind(JFrame screen) {
+
+	public void donationScreenMain(JFrame screen) {
 		List<DonationModel> donationModelList = new ArrayList<>();
-		JDialog jDialog = new JDialog(screen, "Doadores", false);
+		JDialog jDialog = new JDialog(screen, "Doações", false);
 		JPanel jPanel = new JPanel();
 
-		JButton anonymousDonationButton = new JButton("Doação Anônima");
+		JButton allDonation = new JButton("Todas doações");
 		JButton donationByDonorButton = new JButton("Por doador");
 		JButton returnButton = new JButton("Voltar");
 
-		jDialog.setSize(400, 400);
+		jDialog.setSize(900, 400);
 		jDialog.setResizable(true);
 		jPanel.setLayout(new FlowLayout());
 
 		jPanel.add(donationByDonorButton);
-		jPanel.add(anonymousDonationButton);
+		jPanel.add(allDonation);
 		jPanel.add(returnButton);
-		String[] columnNames = { "Doador", "Telefone", "Data da doação" };
+		String[] columnNames = { "Doador", "Telefone", "Descrição", "Valor", "Data da doação" };
 		JTable jTable = new JTable(new DefaultTableModel(columnNames, 0));
 
 		jTable.addMouseListener(new MouseAdapter() {
@@ -741,8 +749,11 @@ public class ManagerScreen {
 				if (row != -1) {
 					String donorName = (String) jTable.getValueAt(row, 0);
 					String donorPhone = (String) jTable.getValueAt(row, 1);
-					String donorDate = (String) jTable.getValueAt(row,2);
-					donationForm(screen, donorName, donorPhone);
+					String donationDescription = (String) jTable.getValueAt(row, 2);
+					BigDecimal donorValue = new BigDecimal(jTable.getValueAt(row, 3).toString());
+					String donationDate = (String) jTable.getValueAt(row, 4);
+
+					donationFormMain(screen, donorName, donorPhone, donationDescription, donorValue, donationDate);
 				}
 			}
 		});
@@ -766,21 +777,22 @@ public class ManagerScreen {
 			donorFindDialog.add(clearFieldsButton);
 			donorFindDialog.add(findDonorButton);
 			donorFindDialog.add(donorReturnButton);
-
+			String findDonorName = null;
+			System.out.println(findDonorName);
 			clearFieldsButton.addActionListener(b -> donorFindField.setText(""));
 
-			findDonorButton.addActionListener(e1 -> {
+			findDonorButton.addActionListener(c -> {
 				donationModelList.clear();
 				managerController = new ManagerController();
-				boolean found = managerController.findDonationByManagerId(donationModelList);
+				boolean found = managerController.findDonationByDonorName(donationModelList, donorFindField.getText());
 				DefaultTableModel model = (DefaultTableModel) jTable.getModel();
 				model.setRowCount(0);
 
 				if (found) {
 					for (DonationModel donation : donationModelList) {
-						model.addRow(new Object[] { donation.getDescription(), donation.getValue() });
+						model.addRow(new Object[] { donation.getDonorName(), donation.getPhone(),
+								donation.getDescription(), donation.getValue(), donation.getDateDonation() });
 					}
-					donorFindDialog.dispose();
 					JOptionPane.showMessageDialog(screen, "Doações encontrado!", "Resultado",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
@@ -795,8 +807,109 @@ public class ManagerScreen {
 
 		returnButton.addActionListener(e -> jDialog.dispose());
 
-		anonymousDonationButton.addActionListener(e -> donationFormAnonymous(screen));
-	
-	
+		allDonation.addActionListener(e -> {
+			donationModelList.clear();
+			managerController = new ManagerController();
+			boolean found = managerController.findAllDonationByManagerId(donationModelList);
+			DefaultTableModel model = (DefaultTableModel) jTable.getModel();
+			model.setRowCount(0);
+
+			if (found) {
+				for (DonationModel donation : donationModelList) {
+					model.addRow(new Object[] { donation.getDonorName(), donation.getPhone(), donation.getDescription(),
+							donation.getValue(), donation.getDateDonation() });
+				}
+				JOptionPane.showMessageDialog(screen, "Doações encontrado!", "Resultado",
+						JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado", "Erro", JOptionPane.ERROR_MESSAGE);
+			}
+		});
 	}
+
+	private void donationFormMain(JFrame screen, String donorName, String donorPhone, String donationDescription,
+			BigDecimal donationValue, String donationDate) {
+		JDialog donationDialog = new JDialog(screen, "Doação", false);
+		donationDialog.setSize(500, 450);
+		donationDialog.setLocationRelativeTo(screen);
+		donationDialog.setLayout(null);
+		JTextField donorNameField = new JTextField(20);
+		JTextArea donorDescriptionField = new JTextArea();
+		JNumberFormatField donorValueField = new JNumberFormatField(new DecimalFormat("#,##0.00"));
+		donorValueField.setLimit(8);
+		JTextField donorPhoneField = new JTextField(15);
+		JLabel donorNameLabel = new JLabel("Nome:");
+		JLabel donorPhoneLabel = new JLabel("Telefone:");
+		JLabel donorDescriptionLabel = new JLabel("Descrição:");
+		JLabel donorValueLabel = new JLabel("Valor:");
+		JButton donorReturnButton = new JButton("Voltar");
+		donorValueField.setValue(donationValue);
+
+		donorNameField.setText(donorName);
+		donorPhoneField.setText(donorPhone);
+		donorDescriptionField.setFont(new Font("Serif", Font.ITALIC, 12));
+		donorDescriptionField.setLineWrap(true);
+		donorDescriptionField.setWrapStyleWord(true);
+
+		JScrollPane scrooll = new JScrollPane(donorDescriptionField);
+
+		scrooll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+		donorDescriptionField.setText(donationDescription);
+		donorNameField.setEnabled(false);
+		donorPhoneField.setEnabled(false);
+		donorNameLabel.setBounds(10, 25, 100, 30);
+		donorNameField.setBounds(60, 25, 180, 30);
+		donorPhoneLabel.setBounds(250, 25, 100, 30);
+		donorPhoneField.setBounds(320, 25, 150, 30);
+		donorDescriptionLabel.setBounds(30, 80, 100, 30);
+		donorDescriptionField.setBounds(120, 80, 300, 200);
+		donorValueLabel.setBounds(20, 330, 50, 30);
+		donorValueField.setBounds(85, 330, 80, 30);
+
+		donorReturnButton.setBounds(390, 330, 100, 30);
+
+		donationDialog.add(scrooll);
+		donationDialog.add(donorNameLabel);
+		donationDialog.add(donorNameField);
+		donationDialog.add(donorDescriptionLabel);
+		donationDialog.add(donorDescriptionField);
+		donationDialog.add(donorPhoneLabel);
+		donationDialog.add(donorPhoneField);
+		donationDialog.add(donorValueLabel);
+		donationDialog.add(donorValueField);
+
+		donationDialog.add(donorReturnButton);
+
+		donorReturnButton.addActionListener(b -> donationDialog.dispose());
+
+		donationDialog.setVisible(true);
+	}
+
+	public void screenTableDonor(JFrame screen, DonorModel donor) {
+		JDialog donorTable = new JDialog(screen, "Doador(a)", false);
+		donorTable.setSize(500, 200);
+		donorTable.setLocationRelativeTo(screen);
+		donorTable.setLayout(null);
+
+		JLabel donorCreateDate = new JLabel(donor.getDateDonor());
+		JLabel donorName = new JLabel("Nome: " + donor.getName());
+		JLabel donorPhone = new JLabel("Telefone: " + donor.getPhone());
+		JButton turnBack = new JButton("Voltar");
+
+		donorCreateDate.setBounds(200, 7, 300, 30);
+
+		turnBack.setBounds(250, 300, 100, 30);
+		donorName.setBounds(50, 60, 400, 30);
+		donorPhone.setBounds(50, 100, 400, 30);
+		donorTable.add(donorName);
+		donorTable.add(donorPhone);
+		donorTable.add(donorCreateDate);
+		donorTable.add(turnBack);
+
+		turnBack.addActionListener(b -> donorTable.dispose());
+
+		donorTable.setVisible(true);
+	}
+
 }

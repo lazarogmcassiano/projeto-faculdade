@@ -7,10 +7,12 @@ import java.util.Objects;
 public class DonationModel {
 	private Long donationId;
 	private Long donorId;
+	private String donorName;
+	private String phone;;
 	private Long managerId;
 	private String description;
 	private BigDecimal value;
-	private Timestamp dateDonation;
+	private String dateDonation;
 	public Long getDonationId() {
 		return donationId;
 	}
@@ -22,6 +24,18 @@ public class DonationModel {
 	}
 	public void setDonorId(Long donorId) {
 		this.donorId = donorId;
+	}
+	public String getDonorName() {
+		return donorName;
+	}
+	public void setDonorName(String donorName) {
+		this.donorName = donorName;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
 	}
 	public Long getManagerId() {
 		return managerId;
@@ -41,15 +55,15 @@ public class DonationModel {
 	public void setValue(BigDecimal value) {
 		this.value = value;
 	}
-	public Timestamp getDateDonation() {
+	public String getDateDonation() {
 		return dateDonation;
 	}
-	public void setDateDonation(Timestamp dateDonation) {
+	public void setDateDonation(String dateDonation) {
 		this.dateDonation = dateDonation;
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(dateDonation, description, donationId, donorId, managerId, value);
+		return Objects.hash(dateDonation, description, donationId, donorId, donorName, managerId, phone, value);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -62,13 +76,11 @@ public class DonationModel {
 		DonationModel other = (DonationModel) obj;
 		return Objects.equals(dateDonation, other.dateDonation) && Objects.equals(description, other.description)
 				&& Objects.equals(donationId, other.donationId) && Objects.equals(donorId, other.donorId)
-				&& Objects.equals(managerId, other.managerId) && Objects.equals(value, other.value);
+				&& Objects.equals(donorName, other.donorName) && Objects.equals(managerId, other.managerId)
+				&& Objects.equals(phone, other.phone) && Objects.equals(value, other.value);
 	}
-	@Override
-	public String toString() {
-		return "DonationModel [donationId=" + donationId + ", donorId=" + donorId + ", managerId=" + managerId
-				+ ", description=" + description + ", value=" + value + ", dateDonation=" + dateDonation + "]";
-	}
+	
+	
 	
 	
 

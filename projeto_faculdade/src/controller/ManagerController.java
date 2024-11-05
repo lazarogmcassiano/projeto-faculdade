@@ -73,16 +73,16 @@ public class ManagerController {
 
 	public boolean findDonorByName(String donorName) {
 
-		String sql = "Selectname, phone From donor_table where name = ?";
+		String sql = "Select name, phone From donor_table where name = ?";
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, donorName);
+			statement.setString(1,"%"+ donorName+ "%");
 			ResultSet resultSet = statement.executeQuery();
 
 			if (resultSet.next()) {
 
-				return true;
+				
 			}
-
+			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -109,9 +109,10 @@ public class ManagerController {
 				donorModel.setDateDonor(formattedDate);
 
 				donorModelList.add(donorModel);
-				return !donorModelList.isEmpty();
+				
 
 			}
+			return !donorModelList.isEmpty();
 		} catch (SQLException e) {
 			System.out.println("Usuário não encontrado");
 			e.printStackTrace();
@@ -235,8 +236,8 @@ public class ManagerController {
 			statement.setString(1, donorName);
 			statement.setString(2, donorPhone);
 			ResultSet resultSet = statement.executeQuery();
-			
-			if (resultSet.next()) { 
+
+			if (resultSet.next()) {
 				donorId = resultSet.getLong("donor_id");
 				return true;
 			}
@@ -249,80 +250,136 @@ public class ManagerController {
 
 	}
 
-	
-	public boolean createDonation (String description, BigDecimal value) {
+	public boolean createDonation(String description, BigDecimal value) {
 
 		String sql = "INSERT INTO public.donation_table(donor_id, manager_id, description, value) VALUES (?, ?, ?, ?); ";
-		
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)){
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, donorId);
 			statement.setLong(2, manager.getManagerId());
 			statement.setString(3, description);
 			statement.setBigDecimal(4, value);
 			int insertSql = statement.executeUpdate();
-			
-			if(insertSql > 0 ) {
+
+			if (insertSql > 0) {
 				System.out.println("doação realizada com sucesso!");
 				connection.commit();
 			}
 		} catch (Exception e) {
-			 e.printStackTrace();
+			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
-	
-	
+
 	public boolean createAnonymousDonation(String description, BigDecimal value) {
 
 		String sql = "INSERT INTO public.donation_table(donor_id, manager_id, description, value) VALUES (?, ?, ?, ?); ";
-		
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)){
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, 1);
 			statement.setLong(2, manager.getManagerId());
 			statement.setString(3, description);
 			statement.setBigDecimal(4, value);
 			int insertSql = statement.executeUpdate();
-			
-			if(insertSql > 0 ) {
+
+			if (insertSql > 0) {
 				System.out.println("doação realizada com sucesso!");
 				connection.commit();
 			}
 		} catch (Exception e) {
-		 e.printStackTrace();
+			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
-	
-	// parei aqui!
+
+	// sem utilidade!
 	public boolean findDonationByManagerId(List<DonationModel> donationModelList) {
-		String sql = "select \n"
-				+ "donor_table.name,\n"
-				+ "donor_table.phone,\n"
-				+ "donation_table.description,\n"
-				+ "donation_table.date_time_donation,\n"
-				+ "donation_table.value\n"
-				+ "from donation_table\n"
+		String sql = "select \n" + "donor_table.name,\n" + "donor_table.phone,\n" + "donation_table.description,\n"
+				+ "donation_table.date_time_donation,\n" + "donation_table.value\n" + "from donation_table\n"
 				+ "join donor_table on donation_table.donor_id = donor_table.donor_id\n"
 				+ "where donation_table.manager_id = ?;";
-		
-		try(PreparedStatement statement = connection.prepareStatement(sql)){
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, manager.getManagerId());
 			ResultSet resultSet = statement.executeQuery();
-			if(resultSet.next()) {
-		
-				
+			if (resultSet.next()) {
+
 				return true;
 			}
-			
-		}catch (Exception e) {
-		e.printStackTrace();
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return false;
 	}
+
+	public boolean findAllDonationByManagerId(List<DonationModel> donationModelList) {
+		String sql = "SELECT \n" + "donor_table.name,\n" + "donor_table.phone,\n" + "donation_table.description,\n"
+				+ "donation_table.value,\n" + "donation_table.date_time_donation\n" + "FROM donor_table\n"
+				+ "JOIN donation_table ON donor_table.donor_id = donation_table.donor_id\n"
+				+ "WHERE donor_table.manager_id = ? order by date_time_donation desc;";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, manager.getManagerId());
+			ResultSet resultSet = statement.executeQuery();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+			while (resultSet.next()) {
+				DonationModel donation = new DonationModel();
+
+				donation.setDonorName(resultSet.getString("name"));
+				donation.setPhone(resultSet.getString("phone"));
+				donation.setDescription(resultSet.getString("description"));
+				donation.setValue(resultSet.getBigDecimal("value"));
+				Timestamp dateDonor = resultSet.getTimestamp("date_time_donation");
+				String formattedDate = dateFormat.format(dateDonor);
+				donation.setDateDonation(formattedDate);
+
+				donationModelList.add(donation);
+			
+			}
+			return !donationModelList.isEmpty();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
+
+	public boolean findDonationByDonorName(List<DonationModel> donationModelList, String donorNameField) {
+		String sql = " SELECT donor_table.name, donor_table.phone, donation_table.description, "
+				+ "donation_table.value, donation_table.date_time_donation  " + "from donor_table "
+				+ "join donation_table on donor_table.donor_id = donation_table.donor_id "
+				+ "where donation_table.manager_id = ? and donor_table.name ILIKE ? " 
+				+ " order by  date_time_donation desc";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, manager.getManagerId());
+			statement.setString(2,"%" + donorNameField  + "%");
+			ResultSet resultSet = statement.executeQuery();
+			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+			while (resultSet.next()) {
+				DonationModel donation = new DonationModel();
+				donation.setDonorName(resultSet.getString("name"));
+				donation.setPhone(resultSet.getString("phone"));
+				donation.setDescription(resultSet.getString("description"));
+				donation.setValue(resultSet.getBigDecimal("value"));
+				Timestamp dateDonor = resultSet.getTimestamp("date_time_donation");
+				String formattedDate = dateFormat.format(dateDonor);
+				donation.setDateDonation(formattedDate);
+
+				donationModelList.add(donation);
+				
+			}
+			return !donationModelList.isEmpty();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
+
 }
-
-

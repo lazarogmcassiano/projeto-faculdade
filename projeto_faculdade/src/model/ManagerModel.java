@@ -63,6 +63,11 @@ public class ManagerModel {
 				&& Objects.equals(managerId, other.managerId) && Objects.equals(name, other.name)
 				&& Objects.equals(password, other.password) && Objects.equals(phone, other.phone);
 	}
+	@Override
+	public String toString() {
+		return "ManagerModel [managerId=" + managerId + ", name=" + name + ", login=" + login + ", password=" + password
+				+ ", phone=" + phone + ", dateManager=" + dateManager + "]";
+	}
 
 	
 	

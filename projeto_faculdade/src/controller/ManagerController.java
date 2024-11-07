@@ -43,11 +43,11 @@ public class ManagerController {
 		}
 	}
 
-	public boolean createDonor(String donorName, DonorModel donorModel) {
-		System.out.println(manager);
+	public boolean createDonor(DonorModel donorModel) {
+		System.out.println(manager.getManagerId());
 		String sql = "INSERT INTO donor_table (manager_id, name, phone) VALUES (?, ?, ?)";
 		try {
-			if (!findDonorByName(donorName)) {
+			if (!findDonorByName(donorModel.getName())) {
 				try (PreparedStatement statement = connection.prepareStatement(sql)) {
 					statement.setLong(1, manager.getManagerId());
 					statement.setString(2, donorModel.getName());
@@ -75,14 +75,14 @@ public class ManagerController {
 
 		String sql = "Select name, phone From donor_table where name = ?";
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1,"%"+ donorName+ "%");
+			statement.setString(1,donorName);
 			ResultSet resultSet = statement.executeQuery();
 
 			if (resultSet.next()) {
 
-				
+				return true;
 			}
-			return true;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -167,15 +167,16 @@ public class ManagerController {
 		}
 	}
 
-	public boolean createExpense(ExpenseModel expenseModel) {
+	public boolean createExpense(String description, BigDecimal value) {
 		String sql = "INSERT INTO expense_table (manager_id, description, value) VALUES (?, ?, ?)";
 		try {
 
 			try (PreparedStatement statement = connection.prepareStatement(sql)) {
 				statement.setLong(1, manager.getManagerId());
-				statement.setString(2, expenseModel.getDescription());
-				statement.setBigDecimal(3, expenseModel.getValue());
+				statement.setString(2, description);
+				statement.setBigDecimal(3, value);
 				int insertTable = statement.executeUpdate();
+				
 				if (insertTable > 0) {
 					System.out.println("Despesa registrada");
 					connection.commit();
@@ -349,9 +350,10 @@ public class ManagerController {
 
 	public boolean findDonationByDonorName(List<DonationModel> donationModelList, String donorNameField) {
 		String sql = " SELECT donor_table.name, donor_table.phone, donation_table.description, "
-				+ "donation_table.value, donation_table.date_time_donation  " + "from donor_table "
-				+ "join donation_table on donor_table.donor_id = donation_table.donor_id "
-				+ "where donation_table.manager_id = ? and donor_table.name ILIKE ? " 
+				+ " donation_table.value, donation_table.date_time_donation  " + "from donor_table "
+				+ " join donation_table on donor_table.donor_id = donation_table.donor_id "
+				+ " where donation_table.manager_id = ? AND donor_table.name IS NOT NULL "
+				+ " and donor_table.name ILIKE ? "
 				+ " order by  date_time_donation desc";
 
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

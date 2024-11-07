@@ -131,16 +131,16 @@ public class ManagerScreen {
 				String name = nameField.getText();
 				String phone = DonorphoneField.getText();
 
-				DonorModel donorModel = new DonorModel();
+				DonorModel donorModelCreate = new DonorModel();
 
-				donorModel.setName(name);
-				donorModel.setPhone(phone);
+				donorModelCreate.setName(name);
+				donorModelCreate.setPhone(phone);
 
 				managerController = new ManagerController();
 
-				if (managerController.createDonor(donorModel.getName(), donorModel) == true) {
-					JOptionPane.showMessageDialog(jDialog, "Doador cadastrado com sucesso", "Erro",
-							JOptionPane.ERROR_MESSAGE);
+				if (managerController.createDonor(donorModelCreate)) {
+					JOptionPane.showMessageDialog(jDialog, "Doador(a) cadastrado com sucesso", "Erro",
+							JOptionPane.INFORMATION_MESSAGE);
 					jDialog.dispose();
 				} else {
 					JOptionPane.showMessageDialog(jDialog, "'Nome' já está em uso, por favor use outro.", "Erro",
@@ -191,6 +191,7 @@ public class ManagerScreen {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int row = jTable.getSelectedRow();
+				jTable.setEditingRow(row);
 				if (row != -1) {
 					String expenseDescription = (String) jTable.getValueAt(row, 0);
 					BigDecimal expenseValue = new BigDecimal(jTable.getValueAt(row, 1).toString());
@@ -222,7 +223,7 @@ public class ManagerScreen {
 					JOptionPane.showMessageDialog(screen, "Despesa encontrada: ", "Resultado",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					JOptionPane.showMessageDialog(screen, "Nenhum monitor encontrado ", "Erro",
+					JOptionPane.showMessageDialog(screen, "Nenhum monitor(a) encontrado ", "Erro",
 							JOptionPane.ERROR_MESSAGE);
 				}
 
@@ -267,6 +268,7 @@ public class ManagerScreen {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int row = jTable.getSelectedRow();
+				jTable.setEditingRow(row);
 				if (row != -1) {
 					DonorModel donor = new DonorModel();
 					donor.setName((String) jTable.getValueAt(row, 0));
@@ -287,7 +289,7 @@ public class ManagerScreen {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador", false);
+				JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador(a)", false);
 				donorFindDialog.setLayout(new FlowLayout());
 				donorFindDialog.setSize(300, 100);
 				donorFindDialog.setLocationRelativeTo(screen);
@@ -322,10 +324,10 @@ public class ManagerScreen {
 							for (DonorModel donor : donorModelList) {
 								model.addRow(new Object[] { donor.getName(), donor.getPhone(), donor.getDateDonor() });
 							}
-							JOptionPane.showMessageDialog(screen, "Doador encontrado: ", "Resultado",
+							JOptionPane.showMessageDialog(screen, "Doador(a) encontrado: ", "Resultado",
 									JOptionPane.INFORMATION_MESSAGE);
 						} else {
-							JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado ", "Erro",
+							JOptionPane.showMessageDialog(screen, "Nenhum doador(a) encontrado ", "Erro",
 									JOptionPane.ERROR_MESSAGE);
 						}
 					}
@@ -358,7 +360,7 @@ public class ManagerScreen {
 					JOptionPane.showMessageDialog(screen, "Doadores encontrados: ", "Resultado",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado ", "Erro",
+					JOptionPane.showMessageDialog(screen, "Nenhum doador(a) encontrado ", "Erro",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
@@ -366,91 +368,91 @@ public class ManagerScreen {
 
 	}
 
+	
+	// preciso arrumar a lógica do valor, está acontecendo algum problema no bigDecimal. 
 	private void expenseForm(JFrame screen) {
 
-		JDialog jDialog = new JDialog(screen, "Registrar nova despesa");
-		jDialog.setSize(600, 400);
-		jDialog.setLayout(null);
+	    JDialog jDialog = new JDialog(screen, "Registrar nova despesa");
+	    jDialog.setSize(600, 400);
+	    jDialog.setLayout(null);
 
-		JTextArea expenseDescription = new JTextArea();
-		JLabel expenseDescriptionLabel = new JLabel("descrição:");
-		JLabel expenseValueLabel = new JLabel("valor:");
-		JButton submitButton = new JButton("Gerar");
-		JButton cancelButton = new JButton("Cancelar");
-		JButton clearFieldsButton = new JButton("Limpar");
-		JNumberFormatField expenseValue = new JNumberFormatField(new DecimalFormat(" #,##0.00"));
-		expenseValue.setLimit(8);
-		expenseDescription.setFont(new Font("Serif", Font.ITALIC, 12));
-		expenseDescription.setLineWrap(true);
-		expenseDescription.setWrapStyleWord(true);
+	    JTextArea expenseDescription = new JTextArea();
+	    JLabel expenseDescriptionLabel = new JLabel("Descrição:");
+	    JLabel expenseValueLabel = new JLabel("Valor:");
+	    JButton submitButton = new JButton("Gerar");
+	    JButton cancelButton = new JButton("Cancelar");
+	    JButton clearFieldsButton = new JButton("Limpar");
 
-		expenseDescriptionLabel.setBounds(30, 30, 100, 40);
-		expenseDescription.setBounds(130, 40, 400, 200);
-		expenseValueLabel.setBounds(20, 250, 50, 30);
+	    JNumberFormatField expenseValue = new JNumberFormatField(new DecimalFormat("#,##0.00"));
+	    expenseValue.setLimit(8);
+	    expenseDescription.setFont(new Font("Serif", Font.ITALIC, 12));
+	    expenseDescription.setLineWrap(true);
+	    expenseDescription.setWrapStyleWord(true);
 
-		expenseValue.setBounds(70, 250, 80, 30);
-		cancelButton.setBounds(365, 300, 100, 30);
-		submitButton.setBounds(255, 300, 100, 30);
-		clearFieldsButton.setBounds(145, 300, 100, 30);
+	    expenseDescriptionLabel.setBounds(30, 30, 100, 40);
+	    expenseDescription.setBounds(130, 40, 400, 200);
+	    expenseValueLabel.setBounds(20, 250, 50, 30);
+	    expenseValue.setBounds(70, 250, 80, 30);
+	    cancelButton.setBounds(365, 300, 100, 30);
+	    submitButton.setBounds(255, 300, 100, 30);
+	    clearFieldsButton.setBounds(145, 300, 100, 30);
 
-		jDialog.add(expenseDescription);
-		jDialog.add(expenseDescriptionLabel);
-		jDialog.add(expenseValueLabel);
-		jDialog.add(expenseValue);
-		jDialog.add(clearFieldsButton);
-		jDialog.add(submitButton);
-		jDialog.add(cancelButton);
+	    jDialog.add(expenseDescription);
+	    jDialog.add(expenseDescriptionLabel);
+	    jDialog.add(expenseValueLabel);
+	    jDialog.add(expenseValue);
+	    jDialog.add(clearFieldsButton);
+	    jDialog.add(submitButton);
+	    jDialog.add(cancelButton);
 
-		clearFieldsButton.addActionListener(e -> {
-			expenseDescription.setText("");
-			expenseValue.setText("");
+	    clearFieldsButton.addActionListener(e -> {
+	        expenseDescription.setText("");
+	        expenseValue.setText("");
+	    });
 
-		});
+	    submitButton.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	            try {
+	                
+	    			String value = expenseValue.getText();
+	    			BigDecimal valueDecimal = new BigDecimal(value);
+	                String description = expenseDescription.getText();
 
-		submitButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String description = expenseDescription.getText();
-				String valueText = expenseValue.getText();
-				BigDecimal value = new BigDecimal(valueText);
 
-				ExpenseModel expenseModel = new ExpenseModel();
+	                ManagerController managerC = new ManagerController();
 
-				expenseModel.setDescription(description);
-				expenseModel.setValue(value);
+	               
+	                if (managerC.createExpense(description, valueDecimal)) {
+	                    JOptionPane.showMessageDialog(jDialog, "Despesa registrada com sucesso", "Sucesso",
+	                            JOptionPane.INFORMATION_MESSAGE);
+	                    jDialog.dispose();
+	                } else {
+	                    JOptionPane.showMessageDialog(jDialog, "Ocorreu algum erro.", "Erro", JOptionPane.ERROR_MESSAGE);
+	                }
 
-				managerController = new ManagerController();
+	            } catch (NumberFormatException ex) {
+	                JOptionPane.showMessageDialog(jDialog, "Valor inválido! Por favor, insira um número válido.", "Erro",
+	                        JOptionPane.ERROR_MESSAGE);
+	                ex.printStackTrace();
+	            }
+	        }
+	    });
 
-				if (managerController.createExpense(expenseModel)) {
-					JOptionPane.showMessageDialog(jDialog, "Despesa registrada com sucesso", "Erro",
-							JOptionPane.ERROR_MESSAGE);
-					jDialog.dispose();
-				} else {
-					JOptionPane.showMessageDialog(jDialog, "Ocorreu algum erro.", "Erro", JOptionPane.ERROR_MESSAGE);
-				}
+	    cancelButton.addActionListener(e -> jDialog.dispose());
 
-			}
-		});
-
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				jDialog.dispose();
-			}
-		});
-
-		jDialog.setLocationRelativeTo(screen);
-		jDialog.setResizable(false);
-		jDialog.setVisible(true);
-
+	    jDialog.setLocationRelativeTo(screen);
+	    jDialog.setResizable(false);
+	    jDialog.setVisible(true);
 	}
+
 
 	private void donationScreen(JFrame screen) {
 		List<DonorModel> donorModelList = new ArrayList<>();
 		JDialog jDialog = new JDialog(screen, "Doadores", false);
 		JPanel jPanel = new JPanel();
 
-		JButton anonymousDonationButton = new JButton("Doação Anônima");
+		JButton anonymousDonationButton = new JButton("Doação anônima");
 		JButton donationByDonorButton = new JButton("Por doador");
 		JButton returnButton = new JButton("Voltar");
 
@@ -468,6 +470,7 @@ public class ManagerScreen {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int row = jTable.getSelectedRow();
+				jTable.setEditingRow(row);
 				if (row != -1) {
 					String donorName = (String) jTable.getValueAt(row, 0);
 					String donorPhone = (String) jTable.getValueAt(row, 1);
@@ -482,7 +485,7 @@ public class ManagerScreen {
 		jDialog.setVisible(true);
 
 		donationByDonorButton.addActionListener(e -> {
-			JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador", false);
+			JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador(a)", false);
 			donorFindDialog.setLayout(new FlowLayout());
 			donorFindDialog.setSize(300, 100);
 			donorFindDialog.setLocationRelativeTo(screen);
@@ -510,10 +513,10 @@ public class ManagerScreen {
 						model.addRow(new Object[] { donor.getName(), donor.getPhone() });
 					}
 					donorFindDialog.dispose();
-					JOptionPane.showMessageDialog(screen, "Doador encontrado!", "Resultado",
+					JOptionPane.showMessageDialog(screen, "Doador(a) encontrado!", "Resultado",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado", "Erro",
+					JOptionPane.showMessageDialog(screen, "Nenhum doador(a) encontrado", "Erro",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			});
@@ -746,6 +749,7 @@ public class ManagerScreen {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int row = jTable.getSelectedRow();
+				jTable.setEditingRow(row);
 				if (row != -1) {
 					String donorName = (String) jTable.getValueAt(row, 0);
 					String donorPhone = (String) jTable.getValueAt(row, 1);
@@ -764,7 +768,7 @@ public class ManagerScreen {
 		jDialog.setVisible(true);
 
 		donationByDonorButton.addActionListener(e -> {
-			JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador", false);
+			JDialog donorFindDialog = new JDialog(screen, "Insira o nome do doador(a)", false);
 			donorFindDialog.setLayout(new FlowLayout());
 			donorFindDialog.setSize(300, 100);
 			donorFindDialog.setLocationRelativeTo(screen);
@@ -796,7 +800,7 @@ public class ManagerScreen {
 					JOptionPane.showMessageDialog(screen, "Doações encontrado!", "Resultado",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado", "Erro",
+					JOptionPane.showMessageDialog(screen, "Nenhum doador(a) encontrado", "Erro",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			});
@@ -822,7 +826,7 @@ public class ManagerScreen {
 				JOptionPane.showMessageDialog(screen, "Doações encontrado!", "Resultado",
 						JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(screen, "Nenhum doador encontrado", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(screen, "Nenhum doador(a) encontrado", "Erro", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 	}

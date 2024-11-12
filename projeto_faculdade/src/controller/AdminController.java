@@ -342,15 +342,179 @@ public class AdminController {
 			 	donation.setManagerName(resultSet.getString("managerName"));
 			 	donation.setDateDonation(date);
 			 	donationModelList.add(donation);
-			 	System.out.println(donation);
 			}
-			return true;
+			return !donationModelList.isEmpty();
 			
 		} catch (Exception e) {
-		
+			e.printStackTrace();
 		}
 
 		return false;
 	}
+	
+	public boolean findDonationByDonorName(List<DonationModel> donationModelList, String donorName) {
+
+		String sql = "select donation_id, " + " donor_table.name as donorName, " + " donation_table.description, "
+				+ " value, " + " manager_table.name as managerName, " + " date_time_donation "
+				+ "	from public.donation_table "
+				+ "	join donor_table on donation_table.manager_id = donor_table.manager_id "
+				+ "	join manager_table on donor_table.manager_id = manager_table.manager_id "
+				+ " where donor_table.name = ?;";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+				donationModelList.clear();
+				statement.setString(1, donorName );
+			ResultSet resultSet = statement.executeQuery();
+			SimpleDateFormat formattedDate = new SimpleDateFormat("dd/MM/YYYY hh:mm");
+			while (resultSet.next()) {
+
+			 	Timestamp donationDate = resultSet.getTimestamp("date_time_donation");
+			 	String date = formattedDate.format(donationDate);
+				DonationModel	donation = new DonationModel();
+				donation.setDonationId(resultSet.getLong("donation_id"));
+			 	donation.setDonorName(resultSet.getString("donorName"));
+			 	donation.setDescription(resultSet.getString("description"));
+			 	donation.setValue(resultSet.getBigDecimal("value"));
+			 	donation.setManagerName(resultSet.getString("managerName"));
+			 	donation.setDateDonation(date);
+			 	donationModelList.add(donation);
+			 	System.out.println(donation);
+			}
+			return !donationModelList.isEmpty();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
+	public boolean deleteManager(Long managerId) {
+	    String sqlDonation = "UPDATE public.donation_table SET manager_id = 1 WHERE manager_id = ?";
+	    String sqlDonor = "UPDATE public.donor_table SET manager_id = 1 WHERE manager_id = ?";
+	    String sqlManager = "DELETE FROM public.manager_table WHERE manager_id = ?";
+
+	    try {
+	        // Disable auto-commit mode for transactional control
+	        connection.setAutoCommit(false);
+
+	        // Update donation_table
+	        try (PreparedStatement statementDonation = connection.prepareStatement(sqlDonation)) {
+	            statementDonation.setLong(1, managerId);
+	            statementDonation.executeUpdate();
+	        }
+
+	        // Update donor_table
+	        try (PreparedStatement statementDonor = connection.prepareStatement(sqlDonor)) {
+	            statementDonor.setLong(1, managerId);
+	            statementDonor.executeUpdate();
+	        }
+
+	        // Delete from manager_table
+	        try (PreparedStatement statementManager = connection.prepareStatement(sqlManager)) {
+	            statementManager.setLong(1, managerId);
+	            int rowsAffected = statementManager.executeUpdate();
+
+	            // Commit transaction if all statements succeed
+	            if (rowsAffected > 0) {
+	                connection.commit();
+	                return true;
+	            }
+	        }
+	    } catch (Exception e)  {
+	        e.printStackTrace();
+	        try {
+	            // Rollback in case of any error
+	       
+	        } catch (Exception b) {
+	
+	    } 
+	    
+	 
+	}
+	    return false;
+	    }
+	
+
+public boolean deleteDonor(Long donorId) {
+    
+    String sqlDonor = "UPDATE public.donation_table SET donor_id = 1 WHERE donor_id = ?";
+    String sqlManager = "DELETE FROM public.donor_table WHERE donor_id = ?";
+
+    try {
+        // Disable auto-commit mode for transactional control
+        connection.setAutoCommit(false);
+
+
+
+
+        // Update donor_table
+        try (PreparedStatement statementDonor = connection.prepareStatement(sqlDonor)) {
+            statementDonor.setLong(1, donorId);
+            statementDonor.executeUpdate();
+        }
+
+        // Delete from manager_table
+        try (PreparedStatement statementManager = connection.prepareStatement(sqlManager)) {
+            statementManager.setLong(1, donorId);
+            int rowsAffected = statementManager.executeUpdate();
+
+            // Commit transaction if all statements succeed
+            if (rowsAffected > 0) {
+                connection.commit();
+                return true;
+            }
+        }
+    } catch (Exception e)  {
+        e.printStackTrace();
+        try {
+            // Rollback in case of any error
+       
+        } catch (Exception b) {
+
+    } 
+    
+ 
+}
+    return false;
+    }
+
+
+
+
+public boolean deleteDonation(Long donationId) {
+    
+    
+	
+    String sql = "DELETE FROM public.donation_table WHERE donation_id = ?";
+
+    try {
+    
+        // Delete from manager_table
+        try (PreparedStatement statementManager = connection.prepareStatement(sql)) {
+            statementManager.setLong(1, donationId);
+            int rowsAffected = statementManager.executeUpdate();
+
+            // Commit transaction if all statements succeed
+            if (rowsAffected > 0) {
+                connection.commit();
+                return true;
+            }
+        }
+    } catch (Exception e)  {
+        e.printStackTrace();
+        try {
+            // Rollback in case of any error
+       
+        } catch (Exception b) {
+
+    } 
+    
+ 
+}
+    return false;
+    }
 
 }
+
+

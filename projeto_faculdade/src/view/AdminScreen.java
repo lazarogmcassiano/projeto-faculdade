@@ -41,7 +41,7 @@ public class AdminScreen extends JFrame {
 
 	// Admin main Screen (menu)
 	public void AdminScreenPrincipal() {
-		JFrame jFrame = new JFrame("Admin Screen");
+		JFrame jFrame = new JFrame("Painel do Administrador(a)");
 		JPanel screenPrincipal = new JPanel();
 
 		jFrame.setSize(new Dimension(500, 600));
@@ -75,6 +75,8 @@ public class AdminScreen extends JFrame {
 		jFrame.setVisible(true);
 		jFrame.setLocationRelativeTo(null);
 
+		generalStatisticsButton.addActionListener(e -> new StatisticScreen(jFrame));
+		
 		donationRecordButton.addActionListener(e -> donationScreen(jFrame));
 
 		expenseRecordButton.addActionListener(e -> expenseScreen(jFrame));
@@ -97,14 +99,12 @@ public class AdminScreen extends JFrame {
 
 		JButton allDonationButton = new JButton("Todos as doações");
 		JButton findDonorButton = new JButton("Buscar por doador");
-		JButton refundDonation = new JButton("Extornar doação");
 		JButton returnButton = new JButton("Voltar");
 
 		jPanel.add(allDonationButton);
 		jPanel.add(findDonorButton);
-		jPanel.add(refundDonation);
 		jPanel.add(returnButton);
-		String[] columnNames = { "ID", "Doador", "Descrição", "Valor", "Monitor" };
+		String[] columnNames = { "ID", "Doador", "Descrição", "Valor", "Monitor", "Data da Criação" };
 		JTable jTable = new JTable(new DefaultTableModel(columnNames, 0));
 
 		jDialog.add(new JScrollPane(jTable), BorderLayout.CENTER);
@@ -118,23 +118,71 @@ public class AdminScreen extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
-				int row = jTable.getSelectedColumn();
+				int row = jTable.getSelectedRow();
 				jTable.setEditingRow(row);
-				if (row != -1) {
+				if (row != -2) {
 					DonationModel donation = new DonationModel();
 					
 					donation.setDonationId((Long) jTable.getValueAt(row, 0));
 					donation.setDonorName((String) jTable.getValueAt(row, 1));
 					donation.setDescription((String) jTable.getValueAt(row,2));
 					donation.setValue((BigDecimal) jTable.getValueAt(row, 3));
-					donation.setManagerName((String) jTable.getValueAt(row, 4));
 					donation.setDateDonation((String) jTable.getValueAt(row, 5));
 					
+					JDialog expenseDialogScreen = new JDialog(screen, "Despesa", false);
+					expenseDialogScreen.setSize(new Dimension(360, 470));
+					expenseDialogScreen.setLocationRelativeTo(screen);
+					expenseDialogScreen.setLayout(null);
+
+					JLabel expenseId = new JLabel("ID: " + donation.getDonationId());
+					JLabel expenseName = new JLabel("Monitor(a): " + donation.getDonorName());
+					JNumberFormatField expenseValue = new JNumberFormatField(new DecimalFormat("R$ #,##0.00"));
+					JTextArea expenseDescriptionArea = new JTextArea();
+					expenseValue.setLimit(8);
+					JButton deleteDonation = new JButton("Extornar");
+					JButton turnBackButton = new JButton("Voltar");
+					deleteDonation.setBackground(Color.pink);
+					expenseId.setBounds(165, 1, 50, 50);
+					expenseName.setBounds(80, 35, 200, 30);
+					expenseDescriptionArea.setBounds(50, 70, 250, 250);
+					expenseValue.setBounds(135, 330, 100, 30);
+					deleteDonation.setBounds(60, 380, 110, 30);
+					turnBackButton.setBounds(200, 380, 110, 30);
+					expenseValue.setText(donation.getValue().toString());
+					expenseDescriptionArea.setText(donation.getDescription());
+
+					expenseDialogScreen.add(turnBackButton);
+					expenseDialogScreen.add(deleteDonation);
+					expenseDialogScreen.add(expenseId);
+					expenseDialogScreen.add(expenseName);
+					expenseDialogScreen.add(expenseValue);
+					expenseDialogScreen.add(expenseDescriptionArea);
+
+					expenseDialogScreen.setVisible(true);
+
+					deleteDonation.addActionListener(c -> {
+						AdminController admin = new AdminController();
+
+						if (admin.deleteDonation(donation.getDonationId())) {
+							JOptionPane.showMessageDialog(screen, "Doação extornada", "Resultado",
+									JOptionPane.INFORMATION_MESSAGE);
+							expenseDialogScreen.dispose();
+						} else {
+							JOptionPane.showMessageDialog(screen, "Doação não extornada", "Resultado",
+									JOptionPane.ERROR_MESSAGE);
+						}
+					});
 					
+					
+					turnBackButton.addActionListener(b -> expenseDialogScreen.dispose());
+
+			
+				}
+		
 					
 				}
 
-			}
+			
 
 		});
 
@@ -170,19 +218,49 @@ public class AdminScreen extends JFrame {
 			JDialog findDonorScreen = new JDialog(screen, "Insira o nome do doador(a)", false);
 			findDonorScreen.setLayout(new FlowLayout());
 			JTextField donorText = new JTextField(20);
-		//	JButton findDonorByName = new JButton("Buscar");
-			JButton turnBackButton = new JButton("Voltar");
+			JButton findDonorByName = new JButton("Buscar");
+			JButton returnButtonByName = new JButton("Voltar");
 			jDialog.setLocationRelativeTo(screen);
 			findDonorScreen.add(donorText);
-			findDonorScreen.add(findDonorButton);
-			findDonorScreen.add(returnButton);
+			findDonorScreen.add(findDonorByName);
+			findDonorScreen.add(returnButtonByName);
 			findDonorScreen.setSize(300, 100);
 			findDonorScreen.setLocationRelativeTo(screen);
 			findDonorScreen.setVisible(true);
 
-			// findDonorButton.addActionListener(e ->);
+				
+			
+				findDonorByName.addActionListener(b -> {
 
-			turnBackButton.addActionListener(b -> findDonorScreen.dispose());
+					AdminController admin = new AdminController();
+						System.out.println(donorText.getText());
+					boolean found = admin.findDonationByDonorName(donationModelList, donorText.getText());
+					if (found) {
+
+						DefaultTableModel model = (DefaultTableModel) jTable.getModel();
+						model.setRowCount(0);
+
+						if (found) {
+							for (DonationModel donation : donationModelList) {
+								model.addRow(new Object[] { donation.getDonationId(), donation.getDonorName(),
+										donation.getDescription(), donation.getValue(), donation.getManagerName(),
+										donation.getDateDonation() });
+							}
+							findDonorScreen.dispose();
+							JOptionPane.showMessageDialog(screen, "Doações encontradas", "Resultado",
+									JOptionPane.INFORMATION_MESSAGE
+									);
+
+						} else {
+							JOptionPane.showMessageDialog(screen, "Doação não encontrada", "Resultado",
+									JOptionPane.ERROR_MESSAGE);
+
+						}
+					}
+					;
+				});
+
+				returnButtonByName.addActionListener(b -> findDonorScreen.dispose());
 		});
 
 		returnButton.addActionListener(e -> jDialog.dispose());
@@ -419,6 +497,22 @@ public class AdminScreen extends JFrame {
 
 					updateDonor.addActionListener(b -> formDonorUpdate(screen, donorModelTable));
 
+					deleteManager.addActionListener(b -> {
+						
+						AdminController adminC = new AdminController();
+						boolean delManager = adminC.deleteDonor(donorModelTable.getDonorId());
+							
+						if(delManager) {
+							
+							JOptionPane.showMessageDialog(screen, "Doador(a) deletado ", "Resultado",
+									JOptionPane.INFORMATION_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(screen, "Doador(a) não deletado", "Erro",
+									JOptionPane.ERROR_MESSAGE);
+						}
+					});
+					
+					
 					turnBack.addActionListener(c -> donorTableScreen.dispose());
 
 				}
@@ -564,7 +658,21 @@ public class AdminScreen extends JFrame {
 						formManagerUpdate(screen, managerModel);
 						jDialog.dispose();
 					});
-
+						
+					deleteManager.addActionListener(b -> {
+						
+						AdminController adminC = new AdminController();
+						boolean delManager = adminC.deleteManager(managerModel.getManagerId());
+							
+						if(delManager) {
+							
+							JOptionPane.showMessageDialog(screen, "Monitor(a) deletado ", "Resultado",
+									JOptionPane.INFORMATION_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(screen, "Monitor(a) não deletado", "Erro",
+									JOptionPane.ERROR_MESSAGE);
+						}
+					});
 					turnBack.addActionListener(b -> jDialog.dispose());
 				}
 			}
